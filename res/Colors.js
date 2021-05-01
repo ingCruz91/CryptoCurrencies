@@ -1,0 +1,57 @@
+const color = {
+  LightBlue: '#1FBAFC',
+  DarkBlue: '#120E8B',
+  DarkBlueSelected: '#043FAA',
+  Blue: '#0F56FB',
+  BlueApp: '#1F4DF5',
+  Blueish: '#042F93',
+  BluePalid: '#5F8EFF',
+  TutorialBlue: '#00B9FF',
+  Yellow: '#FFFD37',
+  Gray: '#C4C4C4',
+  GrayDark: '#606770',
+  Dark: '#3A3A3A',
+  White: '#FFF',
+  Black: '#000',
+  Red: '#FC1E49',
+  BlueCurrentTab: '#007CC2',
+
+  PureRed: '#FF0000',
+  graydDisabledButton: '#E4E4E4',
+
+  BabyBlue: '#2DDEFD',
+  GrayBG: '#F9F9F9',
+  GradyDisabledButton: '#E0E0E0',
+  RedNotAvailableButton: '#FF194E',
+  DarkGray: '#454545',
+  LightGray: '#959595',
+  ModalBG: 'rgba(0,0,0,0.6)',
+  TransparentGray: 'rgba(128,128,128,0.1)',
+  TransparentBlack: 'rgba(0, 0, 0, 0.2)',
+  ModalLightBG: 'rgba(255,255,255,0.6)',
+  InputBG: 'rgba(255,255,255,0.2)',
+  BackgroundGray: '#EEEEEE',
+  AlmostWhite: '#FAFAFA',
+
+  MapPinBG: '#F2F2F2',
+
+  Shadow: 'rgba(0, 0, 0, 0.05)',
+
+  BrightYellow: '#ffff00',
+  Blue_Dark_2: '#130669',
+  Blue_Dark_3: '#11008D',
+  Red_Error: '#D70202',
+  Gray2: '#979797',
+  Gray_3: '#7D7979',
+  Gray_4: '#8E8E8E',
+  Gray_2: '#333030',
+
+  InputBorder: '#F1F1F1',
+  Green: '#219653',
+  Salmon: '#EB5757',
+  BlackText: '#252525',
+  PlaceholderText: '#828282',
+  Radio: '#42BCF5',
+}
+
+export default color
