@@ -5,96 +5,143 @@ import {SafeAreaView, StyleSheet, Text, TextInput, View} from 'react-native';
 import {AssetsList} from '../components/AssetsList';
 import {useDispatch, useSelector} from 'react-redux';
 import {actions} from '../store/Actions';
-import {ASSET_STATUS_STATUS} from '../models/AssetModel';
-import type {ASSET_TYPE_TYPE} from '../models/AssetModel';
-import webSocket from '../api/WebSocket';
+import {ASSET_STATUS} from '../models/AssetModel';
+import type {ASSET_TYPE} from '../models/AssetModel';
+import getWebSocketInstance from '../api/WebSocket';
 import assetReducer from '../store/AssetReducer';
 import _ from 'lodash';
+import constants from '../helpers/Constants';
 
-
-const MainScreen = ({ navigation }) => {
+const MainScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const assetList = useSelector(state => state?.assetReducer.listOfAssets);
-
   const [enteredSearch, setEnteredSearch] = useState('');
-  const [top20, setTop20] = useState([]);
 
+  let currentRequest = null;
+  const assetsReceivedList = [];
+  /**
+   * @function connect
+   * This function establishes the connect with the websocket and also ensures constant reconnection if connection closes
+   */
+  const connectSocket = getAssets => {
+    let webSocket = getWebSocketInstance(getAssets);
+    // websocket onopen event listener
+    webSocket.onopen = () => {
+      currentRequest = getAssets;
+    };
 
-  const handleReceive = received => {
-  //  console.log(received);
+    // websocket onclose event listener
+    webSocket.onclose = e => {
+      if (currentRequest === constants.api.GET_ALL_ASSETS) {
+        const top20AssetsList = assetsReceivedList
+          .sort((a, b) => b.value - a.value)
+          .slice(0, 20);
+        console.log(top20AssetsList);
+        addAssets(top20AssetsList);
+        const assetKeys = _.map(top20AssetsList, 'key').toString();
+        console.log(assetKeys);
+        setTimeout(() => {
+          connectSocket(assetKeys);
+        }, 4000);
+      } else {
+        check(webSocket);
+      }
+    };
+    webSocket.onmessage = e => {
+      handleReceive(e.data);
+    };
 
-    let cryptos = JSON.parse(received);
-   // console.log({assetList});
-    for (const key in cryptos) {
-      if (cryptos.hasOwnProperty(key)) {
-        // dispatch(
-        //   actions.addAsset({
-        //     key: key,
-        //     value: cryptos[key],
-        //   }),
-        // );
-        // dispatch(
-        //   actions.updateAsset({
-        //     key: key,
-        //     value: cryptos[key],
-        //   }),
-        // );
-    //    console.log({assetList});
+    // websocket onerror event listener
+    webSocket.onerror = err => {
+      console.error(
+        'Socket encountered error: ',
+        err.message,
+        'Closing socket',
+      );
+      webSocket.close();
+    };
+
+    setTimeout(() => {
+      if (currentRequest === constants.api.GET_ALL_ASSETS) {
+        webSocket.close();
+      }
+    }, 5000);
+  };
+  /**
+   * utilited by the @function connect to check if the connection is close, if so attempts to reconnect
+   */
+  const check = ws => {
+    if (!ws || ws.readyState === WebSocket.CLOSED) {
+      connectSocket(currentRequest);
+    } //check if websocket instance is closed, if so call `connectSocket` function.
+  };
+  //function to dispatch top20 list sorted
+  const addAssets = top20AssetsList => {
+    for (const key in top20AssetsList) {
+      if (top20AssetsList.hasOwnProperty(key)) {
+        dispatch(
+          actions.addAsset({
+            id: key,
+            key: top20AssetsList[key].key,
+            value: top20AssetsList[key].value,
+            diff: 0,
+            status: ASSET_STATUS.DOWN,
+          }),
+        );
+      }
+    }
+  };
+  const getTop20Assets = received => {
+
+    for (const key in received) {
+      if (received.hasOwnProperty(key)) {
+        const repeatedAsset = _.find(assetsReceivedList, {key: key});
+
+        if (!repeatedAsset) {
+          assetsReceivedList.push({
+            key: key,
+            value: parseFloat(received[key]),
+          });
+        } else if (
+          repeatedAsset &&
+          parseFloat(received[key]) > parseFloat(repeatedAsset?.value)
+        ) {
+          assetsReceivedList[key] = {
+            key: key,
+            value: parseFloat(received[key]),
+          };
+        }
+      }
+    }
+  };
+  const updateAssets = received => {
+    for (const key in received) {
+      if (received.hasOwnProperty(key)) {
+        dispatch(
+          actions.updateAsset({
+            key: key,
+            value: received[key],
+          }),
+        );
       }
     }
   };
 
-  const searchTop20 = {"swarm-city":"0.089573","utrust":"0.534260","you-coin":"0.089168","indorse-token":"0.026518","sfi":"1511.55","stealth":"0.202498",
-    "lcx":"0.064706","hive-project":"0.029774","redfox-labs":"0.236222","arcblock":"0.233743","elysian":"0.006738","aidcoin":"0.132314","bzx-protocol":"0.823317",
-    "refereum":"0.020133","yoyow":"0.034822","nft":"0.365104","yuan-chain-coin":"0.022436","the-abyss":"0.057315","dsla-protocol":"0.018131","chads-vc":"0.086557",
-    "gamecredits":"0.287876","ultra":"0.594395","achain":"0.021810","ceek-vr":"0.006556","sirin-labs-token":"0.028576","defi-pulse-index":"564.73","kekcoin":"0.172232",
-    "status":"0.175892","hempcoin":"0.023586","wings":"0.099864","enigma-project":"0.391189","jarvis-network":"0.164868","touchcon":"0.003354","fsw-token":"0.241195"
-    ,"verify":"0.028788","amon":"0.007928","fantom":"0.805882","request-network":"0.149878","rlc":"3.04","all-sports":"0.023179","high-performance-blockchain":"0.370074",
-    "qbao":"0.015851","yield-farming":"0.161588","lamden":"0.058961","libertas-token":"0.028542","fetch":"0.630853","cryptopay":"0.064747","smartcash":"0.017821"
-    ,"harvest-finance":"178.15","gobyte":"0.082084","primas":"0.049793","buck-hath-coin":"0.083991","silk":"0.002024","nxt":"0.082121","bitgear":"0.046912"
-    ,"loom-network":"0.156792","crypterium":"0.335732","opacity":"0.216023","coinfi":"0.009897","sphere":"0.371629","tribute":"0.479831","verge":"0.053710"
-    ,"arcona":"0.137425","2key-network":"0.073167","baguette-token":"0.025151","sumokoin":"0.091538","yearn-finance":"49067.40","vericoin":"0.134615","civic":"0.527444"
-    ,"essentia":"0.005524","gochain":"0.059467","syscoin":"0.490401","fintrux-network":"0.024895","swing":"0.109303","bns-token":"0.126739","oneledger":"0.021145","vechain":"0.215716"
-    ,"community-token":"0.323139","pantos":"0.131983","matic-network":"0.784656","zero":"0.412397","monero":"422.50","nix":"0.343423","acoin":"0.029914","digitalnote":"0.005711"
-    ,"dxdao":"291.23","trust":"0.017373","sonm":"0.172583","neumark":"0.245507","bitmark":"0.192166","testa":"0.397722","titan-coin":"0.005177","temco":"0.010930",
-    "herocoin":"0.050662","lambda":"0.085393","bnktothefuture":"0.079000","rsk-infrastructure-framework":"0.342045","viberate":"0.146660","appcoins":"0.248502",
-    "hydro-protocol":"0.022687","hedgetrade":"1.57","spaghetti":"0.230741","callisto-network":"0.014324","curecoin":"0.155715"}
+  const handleReceive = received => {
+   // console.log(received);
+   // console.log(currentRequest)
+    let receivedAssets = JSON.parse(received);
 
+    if (currentRequest === constants.api.GET_ALL_ASSETS) {
+      getTop20Assets(receivedAssets);
+    } else {
+      updateAssets(receivedAssets);
+    }
+  };
 
   useEffect(() => {
-    let arrTOp = [];
-
-      for (const key in searchTop20) {
-        if (searchTop20.hasOwnProperty(key)) {
-        //  console.log(key)
-         // console.log( searchTop20[key])
-          arrTOp.push({key: key, value: searchTop20[key]});
-        }
-      }
-    //  console.log(arrTOp)
-   const orderC = arrTOp.sort((a, b) => b.value - a.value).slice(0, 20);
-
-  //
-    console.log(orderC)
-  //   let topValues = arrTOp.sort((a, b) => b.value - a.value).slice(0, 5);
-  //   console.log(topValues); // [789,689,98,65,33]
-    webSocket.onopen = () => {
-      console.log('Websocket opened.');
-    };
-    webSocket.onmessage = e => {
-      // console.log(`Received: ${e.data}`);
-      handleReceive(e.data);
-    };
-
-    webSocket.onerror = e => {
-      console.log(`Error: ${e.message}`);
-    };
-
-    webSocket.onclose = e => {
-      console.log(e.code, e.reason);
-    };
+    connectSocket(constants.api.GET_ALL_ASSETS);
   }, []);
- // webSocket.close();
 
   const getAssetsByFilter = () => {
     return enteredSearch
@@ -104,21 +151,12 @@ const MainScreen = ({ navigation }) => {
       : assetList;
   };
 
-  const testFunction = () => {
-    console.log('FUNCTION PASSED');
-
-  };
   const assetInputHandler = enteredText => {
     setEnteredSearch(enteredText);
   };
 
-
   return (
     <SafeAreaView style={styles.container}>
-      {/*<View style={styles.headerView}>*/}
-      {/*  <Text style={styles.headerText}>Asset Prices</Text>*/}
-      {/*</View>*/}
-
       <View style={styles.headerSection}>
         <View style={styles.inputContainer}>
           <TextInput
@@ -163,7 +201,7 @@ const styles = StyleSheet.create({
   },
   input: {
     width: '80%',
-    borderColor: 'black',
+    backgroundColor: 'white',
     borderWidth: 1,
     padding: 12,
   },
