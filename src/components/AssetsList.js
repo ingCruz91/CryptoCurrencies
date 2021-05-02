@@ -1,5 +1,5 @@
 //@flow
-import {StyleSheet, Text, FlatList, View} from 'react-native';
+import {StyleSheet, Text, FlatList, View, TouchableWithoutFeedback} from 'react-native';
 import React, {useState} from 'react';
 import {heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import type {ASSET_TYPE} from '../models/AssetModel';
@@ -31,18 +31,25 @@ export const AssetsList = (props: AssetListProps) => {
   const keyExtractor = item => item.id;
 
   const Item = ({asset}) => (
+    <TouchableWithoutFeedback onPress={() => props.onPressHandler(asset)}>
     <View style={styles.item}>
       <Text style={styles.titleText}>{asset.key}</Text>
       <Text style={styles.titleText}>{asset.value}</Text>
       <Text style={styles.titleText}>{asset.diff}</Text>
-      <Text style={styles.titleText}>{asset.status}</Text>
     </View>
+    </TouchableWithoutFeedback>
+
   );
 
   const renderItem = ({item}) => <Item asset={item} />;
 
   return (
     <View style={containerStyle}>
+      <View style={styles.headerItem}>
+        <Text style={styles.titleText}>Name</Text>
+        <Text style={styles.titleText}>Price</Text>
+        <Text style={styles.titleText}>DIFF</Text>
+      </View>
       <FlatList
         keyExtractor={keyExtractor}
         data={assets}
@@ -66,15 +73,24 @@ const styles = StyleSheet.create({
   },
   item: {
     backgroundColor: 'white',
-    padding: 2,
-    marginVertical: 8,
+    padding: 10,
+    marginVertical: 2,
     marginHorizontal: 16,
-    flexDirection: 'column',
-    justifyContent: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerItem: {
+    padding: 10,
+    backgroundColor: 'black',
+    marginVertical: 10,
+    marginHorizontal: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   titleText: {
-    fontSize: hp('3%'),
+    fontSize: hp('2.5%'),
     fontFamily: 'AvenirNext-Bold',
     color: '#192965',
   },
