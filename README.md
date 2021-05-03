@@ -1,7 +1,6 @@
 # CryptoCurrencies
 
-Mobile App for search repositories from github platform
-
+Mobile App for search ocurrencies in market
 ## Getting Started
 These instructions will get you a copy of the project up and running on your local machine for development purposes.
 
