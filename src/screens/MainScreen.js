@@ -16,6 +16,7 @@ const MainScreen = ({navigation}) => {
   const dispatch = useDispatch();
   const assetList = useSelector(state => state?.assetReducer.listOfAssets);
   const [enteredSearch, setEnteredSearch] = useState('');
+  let assetsKey = [];
 
   let currentRequest = null;
   const assetsReceivedList = [];
@@ -36,10 +37,10 @@ const MainScreen = ({navigation}) => {
         const top20AssetsList = assetsReceivedList
           .sort((a, b) => b.value - a.value)
           .slice(0, 20);
-        console.log(top20AssetsList);
+        //console.log(top20AssetsList);
         addAssets(top20AssetsList);
         const assetKeys = _.map(top20AssetsList, 'key').toString();
-        console.log(assetKeys);
+        assetsKey = assetKeys;
         setTimeout(() => {
           connectSocket(assetKeys);
         }, 4000);
@@ -72,7 +73,7 @@ const MainScreen = ({navigation}) => {
    */
   const check = ws => {
     if (!ws || ws.readyState === WebSocket.CLOSED) {
-      connectSocket(currentRequest);
+      connectSocket(assetsKey);
     } //check if websocket instance is closed, if so call `connectSocket` function.
   };
   //function to dispatch top20 list sorted
@@ -91,8 +92,8 @@ const MainScreen = ({navigation}) => {
       }
     }
   };
-  const getTop20Assets = received => {
 
+  const getTop20Assets = received => {
     for (const key in received) {
       if (received.hasOwnProperty(key)) {
         const repeatedAsset = _.find(assetsReceivedList, {key: key});
@@ -114,6 +115,7 @@ const MainScreen = ({navigation}) => {
       }
     }
   };
+
   const updateAssets = received => {
     for (const key in received) {
       if (received.hasOwnProperty(key)) {
@@ -128,8 +130,6 @@ const MainScreen = ({navigation}) => {
   };
 
   const handleReceive = received => {
-   // console.log(received);
-   // console.log(currentRequest)
     let receivedAssets = JSON.parse(received);
 
     if (currentRequest === constants.api.GET_ALL_ASSETS) {
@@ -172,7 +172,8 @@ const MainScreen = ({navigation}) => {
       <AssetsList
         containerStyle={styles.middleSection}
         assets={getAssetsByFilter()}
-        onPressHandler={() => navigation.navigate('Details')}
+       // onPressHandler={() => navigation.navigate('Details')}
+        navigation={navigation}
       />
       <View style={styles.footerSection} />
     </SafeAreaView>

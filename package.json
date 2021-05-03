@@ -18,6 +18,7 @@
     "axios": "^0.21.1",
     "flow-bin": "^0.149.0",
     "lodash": "^4.17.21",
+    "moment": "^2.29.1",
     "react": "17.0.1",
     "react-native": "0.64.0",
     "react-native-chart-kit": "^6.11.0",

@@ -6,7 +6,7 @@ const initialState = {
 };
 
 const assetReducer = (state = initialState, action) => {
-    console.log(action)
+   // console.log(action)
   switch (action.type) {
     case actionTypes.ADD_ASSET:
       return {
@@ -24,10 +24,10 @@ const assetReducer = (state = initialState, action) => {
       const index = _.findIndex(state.listOfAssets, {key: action.data.key});
       const assets = [...state.listOfAssets];
       const asset = {...assets[index]};
-      console.log({ asset })
-      asset.diff = 10;
+      let diff = (asset.value - action.data.value).toFixed(2);
+      asset.diff = '/ ' + diff;
       asset.value = action.data.value;
-      asset.status = 'UP';
+      asset.status = diff > 0 ? 'UP' : 'DOWN';
       assets[index] = asset;
       return {
         ...state.listOfAssets,

@@ -1,5 +1,11 @@
 //@flow
-import {StyleSheet, Text, FlatList, View, TouchableWithoutFeedback} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  FlatList,
+  View,
+  TouchableWithoutFeedback,
+} from 'react-native';
 import React, {useState} from 'react';
 import {heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import type {ASSET_TYPE} from '../models/AssetModel';
@@ -12,6 +18,7 @@ type AssetListProps = {
   onRefreshData: () => void,
   containerStyle?: StyleSheet.Styles,
   text?: string,
+  navigation: any,
 };
 
 export const AssetsList = (props: AssetListProps) => {
@@ -21,6 +28,7 @@ export const AssetsList = (props: AssetListProps) => {
     boldFont,
     onPressHandler,
     containerStyle,
+    navigation,
     text,
   } = props;
 
@@ -31,14 +39,21 @@ export const AssetsList = (props: AssetListProps) => {
   const keyExtractor = item => item.id;
 
   const Item = ({asset}) => (
-    <TouchableWithoutFeedback onPress={() => props.onPressHandler(asset)}>
-    <View style={styles.item}>
-      <Text style={styles.titleText}>{asset.key}</Text>
-      <Text style={styles.titleText}>{asset.value}</Text>
-      <Text style={styles.titleText}>{asset.diff}</Text>
-    </View>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        navigation.navigate('Details', {
+          asset: asset.key,
+        });
+      }}>
+      <View
+        style={
+          asset.status === 'UP' ? styles.itemPositive : styles.itemNegative
+        }>
+        <Text style={styles.titleText}>{asset.key}</Text>
+        <Text style={styles.titleText}>{asset.value}</Text>
+        <Text style={styles.titleText}>{asset.diff}</Text>
+      </View>
     </TouchableWithoutFeedback>
-
   );
 
   const renderItem = ({item}) => <Item asset={item} />;
@@ -46,9 +61,9 @@ export const AssetsList = (props: AssetListProps) => {
   return (
     <View style={containerStyle}>
       <View style={styles.headerItem}>
-        <Text style={styles.titleText}>Name</Text>
-        <Text style={styles.titleText}>Price</Text>
-        <Text style={styles.titleText}>DIFF</Text>
+        <Text style={styles.titleTextHeader}>Name</Text>
+        <Text style={styles.titleTextHeader}>Price</Text>
+        <Text style={styles.titleTextHeader}>DIFF</Text>
       </View>
       <FlatList
         keyExtractor={keyExtractor}
@@ -71,8 +86,17 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 0,
   },
-  item: {
-    backgroundColor: 'white',
+  itemPositive: {
+    backgroundColor: 'green',
+    padding: 10,
+    marginVertical: 2,
+    marginHorizontal: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  itemNegative: {
+    backgroundColor: 'red',
     padding: 10,
     marginVertical: 2,
     marginHorizontal: 16,
@@ -93,6 +117,11 @@ const styles = StyleSheet.create({
     fontSize: hp('2.5%'),
     fontFamily: 'AvenirNext-Bold',
     color: '#192965',
+  },
+  titleTextHeader: {
+    fontSize: hp('2.5%'),
+    fontFamily: 'AvenirNext-Bold',
+    color: 'white',
   },
   itemText: {
     fontSize: hp('2.2%'),
